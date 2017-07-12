@@ -4058,3 +4058,113 @@ def ansible_playbook(parser, xml_parent, data):
             XML.SubElement(value_elm, 'value').text = values.get('value', '')
             XML.SubElement(value_elm, 'hidden').text = str(
                 values.get('hidden', False)).lower()
+
+
+def vsphere_plugin(registry, xml_parent, data):
+    """yaml: vsphere_plugin
+    This plugin adds a way to control Virtual Machines hosted in a VMware
+    vSphere server using Jenkins.  You can configure a Jenkins Slave to
+    use a virtual machine, including an optional snapshot name.
+    If configured to do so, Jenkins will (optionally) revert, then start
+    the virtual machine as a slave.  If configured to do so, Jenkins will
+    also shutdown and (optionally) revert the virtual machine when all
+    jobs have finished processing.
+
+    Additionally, you can manipulate your vSphere VMs & templates using any of
+    the vSphere Build steps provided by this plugin.
+
+    Requires the Jenkins :jenkins-wiki:`vSphere Cloud Plugin
+    <vSphere+Cloud+Plugin>`.
+    """
+
+    vsphereplugin = XML.SubElement(xml_parent, 'org.jenkinsci.plugins.vsphere.VSphereBuildStepContainer')
+    XML.SubElement(vsphereplugin, 'serverName').text = data.get("server_name")
+    XML.SubElement(vsphereplugin, 'serverHash').text = str(data.get("server_hash"))
+
+    action = data.get("action").lower()
+    if action == "clone":
+        pass
+    elif action == "convert_to_template":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.ConvertToTemplate"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'force').text = str(data.get("force", "false"))
+    elif action == "convert_to_vm":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.ConvertToVm"})
+        XML.SubElement(build_step, 'template').text = data.get("template_name")
+        XML.SubElement(build_step, 'resourcePool').text = data.get("resource_pool_name")
+        XML.SubElement(build_step, 'cluster').text = data.get("cluster_name")
+    elif action == "delete":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.Delete"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'failOnNoExist').text = str(data.get("fail_on_null", "false"))
+    elif action == "delete_snapshot":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.DeleteSnapshot"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'snapshotName').text = data.get("snapshot_name")
+        XML.SubElement(build_step, 'consolidate').text = str(data.get("consolidate", "false"))
+        XML.SubElement(build_step, 'failOnNoExist').text = str(data.get("fail_on_null", "false"))
+    elif action == "deploy":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.Deploy"})
+        XML.SubElement(build_step, 'template').text = data.get("template_name")
+        XML.SubElement(build_step, 'clone').text = data.get("clone_name")
+        XML.SubElement(build_step, 'linkedClone').text = str(data.get("linked_clone", "false"))
+        XML.SubElement(build_step, 'resourcePool').text = data.get("resource_pool_name")
+        XML.SubElement(build_step, 'cluster').text = data.get("cluster")
+        XML.SubElement(build_step, 'datastore').text = data.get("datastore")
+        XML.SubElement(build_step, 'powerOn').text = str(data.get("power_on", "false"))
+    elif action == "expose":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.ExposeGuestInfo"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'envVariablePrefix').text = data.get("env_variable_prefix")
+        XML.SubElement(build_step, 'envVars')
+    elif action == "power_off":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.PowerOff"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'evenIfSuspended').text = str(data.get("even_if_suspended", "false"))
+        XML.SubElement(build_step, 'shutdownGracefully').text = str(data.get("shutdown_gracefully", "false"))
+        XML.SubElement(build_step, 'ignoreIfNotExists').text = str(data.get("ignore_if_not_exists", "false"))
+    elif action == "power_on":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.PowerOn"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'timeoutInSeconds').text = str(data.get("timeout", "180"))
+    elif action == "reconfigure":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.Reconfigure"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+
+    elif action == "rename_shaphot":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.RenameSnapshot"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'oldName').text = data.get("old_snapshot_name")
+        XML.SubElement(build_step, 'newName').text = data.get("new_snapshot_name")
+        XML.SubElement(build_step, 'newDescription').text = data.get("snapshot_description", "")
+    elif action == "rename":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.Rename"})
+        XML.SubElement(build_step, 'oldName').text = data.get("old_vm_name")
+        XML.SubElement(build_step, 'newName').text = data.get("new_vm_name")
+    elif action == "rename":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.RevertToSnapshot"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'snapshotName').text = data.get("snapshot_name")
+    elif action == "suspend":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.SuspendVm"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+    elif action == "take_snapshot":
+        build_step = XML.SubElement(vsphereplugin, 'buildStep',
+                                    attrib={"class": "org.jenkinsci.plugins.vsphere.builders.TakeSnapshot"})
+        XML.SubElement(build_step, 'vm').text = data.get("vm_name")
+        XML.SubElement(build_step, 'snapshotName').text = data.get("snapshot_name")
+        XML.SubElement(build_step, 'description').text = data.get("description", "")
+        XML.SubElement(build_step, 'includeMemory').text = str(data.get("includeMemory", "false"))
