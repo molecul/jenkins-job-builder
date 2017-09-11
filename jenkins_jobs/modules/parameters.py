@@ -446,6 +446,12 @@ def extended_choice_param(registry, xml_parent, data):
         'description-property-file', '')
     XML.SubElement(pdef, 'descriptionPropertyKey').text = data.get(
         'description-property-key', '')
+    XML.SubElement(pdef, 'groovyScript').text = data.get(
+        'groovy-script', '')
+    XML.SubElement(pdef, 'defaultGroovyScript').text = data.get(
+        'default-groovy-script', '')
+
+
 
 
 def validating_string_param(registry, xml_parent, data):
