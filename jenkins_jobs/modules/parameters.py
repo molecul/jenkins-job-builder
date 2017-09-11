@@ -448,9 +448,9 @@ def extended_choice_param(registry, xml_parent, data):
     XML.SubElement(pdef, 'descriptionPropertyKey').text = data.get(
         'description-property-key', '')
     XML.SubElement(pdef, 'groovyScript').text = data.get(
-        'groovy-script', '').replace("{", "{{").replace("}", "}}")
+        'groovy-script', '')
     XML.SubElement(pdef, 'defaultGroovyScript').text = data.get(
-        'default-groovy-script', '').replace("{", "{{").replace("}", "}}")
+        'default-groovy-script', '')
 
 
 
